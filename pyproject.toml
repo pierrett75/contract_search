@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contract-search"
+version = "0.1.0"
+description = "Vyhledávání smluv podle jména klienta (OCR + metadata + fuzzy search)"
+requires-python = ">=3.10"
+dependencies = ["pypdf", "pytesseract", "Pillow"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+contract-search = "contract_search.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

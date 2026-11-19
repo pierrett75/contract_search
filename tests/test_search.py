@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from contract_search.search import search
 from contract_search.db import get_db, ingest_folder
-
+from contract_search.search import search
 
 
 def test_search():

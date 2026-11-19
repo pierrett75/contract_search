@@ -1,5 +1,6 @@
 from contract_search.metadata import extract_metadata
 
+
 def test_metadata():
         m = extract_metadata("SMLOUVA O DÍLO\nObjednatel: Petr Dvořák, IČO: 12345678\n"
                              "Datum uzavření: 5. 3. 2024\n")

@@ -1,10 +1,9 @@
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
 from contract_search.loaders import IMAGE_EXT, load_document
 from contract_search.metadata import extract_metadata
 from contract_search.normalize import name_key
-
 
 DB_PATH = "contracts.db"
 

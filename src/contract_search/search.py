@@ -1,5 +1,5 @@
-from difflib import SequenceMatcher
 import sqlite3
+from difflib import SequenceMatcher
 
 from contract_search.normalize import name_key
 

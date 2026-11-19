@@ -1,7 +1,8 @@
 from pathlib import Path
-from PIL import Image
-import pytesseract
+
 import pymupdf
+import pytesseract
+from PIL import Image
 
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".tif", ".tiff"}
 

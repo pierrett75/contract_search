@@ -1,6 +1,7 @@
 import re
 from datetime import date
 
+
 def extract_metadata(text: str) -> dict:
     """
     Vrátí slovník:

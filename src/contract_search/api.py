@@ -9,6 +9,7 @@ from contract_search.deps import DbConn, UploadDir
 from contract_search.search import search
 from contract_search.storage import (
     ALLOWED_SUFFIXES,
+    MAX_BYTES,
     EmptyFile,
     FileTooLarge,
     UnsupportedFileType,
@@ -92,12 +93,12 @@ def upload_contract(file: UploadFile, conn: DbConn, upload_dir: UploadDir) -> Co
     try:
         path = save_upload(data, file.filename, upload_dir)    
     except UnsupportedFileType:
-        detail = "povolené soubory jsou: " .join(sorted(ALLOWED_SUFFIXES))
+        detail = "Povolené soubory jsou: " + ", ".join(sorted(ALLOWED_SUFFIXES))
         raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail)
     except EmptyFile:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Soubor je prázdný")
     except FileTooLarge:
-        raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "Soubor je větší než 10 MB")
+        raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, f"Soubor je větší než {MAX_BYTES // (1024 * 1024)} MB")
 
     file_id = ingest_file(path, conn)
     contract = get_contract(conn, file_id)

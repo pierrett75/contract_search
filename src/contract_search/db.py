@@ -29,7 +29,8 @@ def ingest_folder(folder: str, conn: sqlite3.Connection) -> None:
     for path in sorted(Path(folder).iterdir()):
         if path.suffix.lower() not in {".txt", ".pdf"} | IMAGE_EXT:
             continue
-        ingest_file(path, conn)
+        contract_id = ingest_file(path, conn)
+        print(f"  {path.name:30} -> {contract_id}")
 
 
 def ingest_file(path: Path, conn: sqlite3.Connection) -> int:
@@ -44,7 +45,6 @@ def ingest_file(path: Path, conn: sqlite3.Connection) -> int:
         (str(path), meta["client_name"], key, meta["ico"], meta["date"], text),
     )
     conn.commit()
-    print(f"  {path.name:30} -> {meta}")
     return cursor.lastrowid   
 
 

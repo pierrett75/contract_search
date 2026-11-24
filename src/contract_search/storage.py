@@ -28,7 +28,7 @@ def validate_upload(filename: str, size: int) -> str:
     suff = Path(filename).suffix.lower()
 
     if  suff not in ALLOWED_SUFFIXES:
-        raise UnsupportedFileType
+        raise UnsupportedFileType(suff)
 
     if size == 0:
         raise EmptyFile

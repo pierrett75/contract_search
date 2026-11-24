@@ -16,7 +16,6 @@ from fastapi import Depends
 
 from contract_search.db import get_db
 
-
 ENV_VAR = "CONTRACTS_DB"
 DEFAULT_DB_PATH = "contracts.db"
 UPLOAD_DIR_ENV_VAR = "CONTRACTS_UPLOAD_DIR"

@@ -58,7 +58,7 @@ def search_contracts(
      
 @app.get("/contracts/{contract_id}",
          responses={404: {"description": "Smlouva neexistuje"}},)
-def search_by_contract_id(
+def get_by_contract_id(
     contract_id: int,
     conn: DbConn
 ) -> ContractDetailResponse:
@@ -66,6 +66,6 @@ def search_by_contract_id(
     if contract is None:
         detail=f"Smlouva s id {contract_id} neexistuje"
         raise HTTPException(404, detail=detail)
-    else:
-        return contract
+    
+    return contract
         

@@ -10,7 +10,7 @@ COLUMNS = ("id", "file_path", "client_name", "ico", "date", "full_text")
 
 
 def get_db(path: str = DB_PATH) -> sqlite3.Connection:
-    conn = sqlite3.connect(path)
+    conn = sqlite3.connect(path, check_same_thread=False)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS contracts (
             id          INTEGER PRIMARY KEY,

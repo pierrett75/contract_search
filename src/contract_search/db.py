@@ -6,6 +6,7 @@ from contract_search.metadata import extract_metadata
 from contract_search.normalize import name_key
 
 DB_PATH = "contracts.db"
+COLUMNS = ("id", "file_path", "client_name", "ico", "date", "full_text")
 
 
 def get_db(path: str = DB_PATH) -> sqlite3.Connection:
@@ -39,3 +40,15 @@ def ingest_folder(folder: str, conn: sqlite3.Connection) -> None:
         )
         print(f"  {path.name:30} -> {meta}")
     conn.commit()
+
+
+def get_contract(conn: sqlite3.Connection, contract_id: int) -> dict | None:
+    row = conn.execute(
+        f"SELECT {', '.join(COLUMNS)} FROM contracts WHERE id = ?",
+        (contract_id,),
+    ).fetchone()
+    if row is None:
+        return None
+    return dict(zip(COLUMNS, row))
+    
+       

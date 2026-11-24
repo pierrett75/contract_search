@@ -20,14 +20,15 @@ def search(query: str, conn: sqlite3.Connection, threshold: float = 0.8) -> list
         return []
 
     rows = conn.execute(
-        "SELECT file_path, client_name, full_text FROM contracts WHERE name_key = ?",
+        "SELECT id, file_path, client_name, full_text FROM contracts WHERE name_key = ?",
         (key,),
     ).fetchall()
 
     results = []
-    for file_path, client_name, full_text in rows:
+    for contract_id, file_path, client_name, full_text in rows:
         results.append(
             {
+                "id": contract_id,
                 "file_path": file_path, 
                 "client_name": client_name, 
                 "score" : 1.0, 
@@ -36,15 +37,16 @@ def search(query: str, conn: sqlite3.Connection, threshold: float = 0.8) -> list
         )
 
     rows = conn.execute(
-    "SELECT file_path, client_name, name_key, full_text FROM contracts "
+    "SELECT id, file_path, client_name, name_key, full_text FROM contracts "
     "WHERE name_key IS NOT NULL AND name_key != ?",
     (key,),
     ).fetchall()
 
-    for file_path, client_name, row_key, full_text in rows:
+    for contract_id, file_path, client_name, row_key, full_text in rows:
        score = similarity(key, row_key)
        if score >= threshold:
           results.append({
+            "id":contract_id,
             "file_path": file_path,
             "client_name": client_name,
             "score": score,

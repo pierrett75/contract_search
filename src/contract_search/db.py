@@ -29,17 +29,23 @@ def ingest_folder(folder: str, conn: sqlite3.Connection) -> None:
     for path in sorted(Path(folder).iterdir()):
         if path.suffix.lower() not in {".txt", ".pdf"} | IMAGE_EXT:
             continue
-        text = load_document(path)
-        meta = extract_metadata(text)
-        key = name_key(meta["client_name"]) if meta["client_name"] else None
-        conn.execute(
-            """INSERT OR REPLACE INTO contracts
-               (file_path, client_name, name_key, ico, date, full_text)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (str(path), meta["client_name"], key, meta["ico"], meta["date"], text),
-        )
-        print(f"  {path.name:30} -> {meta}")
+        ingest_file(path, conn)
+
+
+def ingest_file(path: Path, conn: sqlite3.Connection) -> int:
+    """Načte jeden soubor, uloží ho do DB a vrátí id nové smlouvy."""
+    text = load_document(path)
+    meta = extract_metadata(text)
+    key = name_key(meta["client_name"]) if meta["client_name"] else None
+    cursor = conn.execute(
+        """INSERT OR REPLACE INTO contracts
+        (file_path, client_name, name_key, ico, date, full_text)
+        VALUES (?, ?, ?, ?, ?, ?)""",
+        (str(path), meta["client_name"], key, meta["ico"], meta["date"], text),
+    )
     conn.commit()
+    print(f"  {path.name:30} -> {meta}")
+    return cursor.lastrowid   
 
 
 def get_contract(conn: sqlite3.Connection, contract_id: int) -> dict | None:
@@ -50,5 +56,26 @@ def get_contract(conn: sqlite3.Connection, contract_id: int) -> dict | None:
     if row is None:
         return None
     return dict(zip(COLUMNS, row))
-    
-       
+
+
+def _fetch_dicts(cursor: sqlite3.Cursor) -> list[dict]:
+    """Převede řádky z kurzoru na slovníky {název sloupce: hodnota}."""
+    names = [col[0] for col in cursor.description]
+    return [dict(zip(names, row)) for row in cursor.fetchall()]
+
+
+def find_by_name_key(conn: sqlite3.Connection, key: str) -> list[dict]:
+    """Smlouvy s přesně tímto klíčem jména (využije index idx_name_key)."""
+    return _fetch_dicts(conn.execute(
+        "SELECT id, file_path, client_name, full_text FROM contracts WHERE name_key = ?",
+        (key,),
+    ))
+
+
+def find_fuzzy_candidates(conn: sqlite3.Connection, exclude_key: str) -> list[dict]:
+    """Všechny ostatní smlouvy se známým klientem, i s jejich name_key pro porovnání."""
+    return _fetch_dicts(conn.execute(
+        "SELECT id, file_path, client_name, name_key, full_text FROM contracts "
+        "WHERE name_key IS NOT NULL AND name_key != ?",
+        (exclude_key,),
+    ))

@@ -1,4 +1,3 @@
-"""Testy pro Den 1. Spuštění: pytest tests/test_api.py -v"""
 from pathlib import Path
 
 import pytest

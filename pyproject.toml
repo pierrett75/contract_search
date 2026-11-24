@@ -7,7 +7,7 @@ name = "contract-search"
 version = "0.1.0"
 description = "Vyhledávání smluv podle jména klienta (OCR + metadata + fuzzy search)"
 requires-python = ">=3.10"
-dependencies = ["pypdf", "pytesseract", "Pillow", "pymupdf", "fastapi", "uvicorn[standard]"]
+dependencies = ["pypdf", "pytesseract", "Pillow", "pymupdf", "fastapi", "uvicorn[standard]", "python-multipart"]
 
 [project.optional-dependencies]
 dev = ["pytest", "httpx"]

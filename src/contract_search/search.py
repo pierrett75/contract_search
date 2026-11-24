@@ -1,6 +1,7 @@
 import sqlite3
 from difflib import SequenceMatcher
 
+from contract_search.db import find_by_name_key, find_fuzzy_candidates
 from contract_search.normalize import name_key
 
 
@@ -12,46 +13,21 @@ def similarity(a: str, b: str) -> float:
 def search(query: str, conn: sqlite3.Connection, threshold: float = 0.8) -> list[dict]:
     """
     Vrátí seznam celých smluv seřazený od nejlepší shody:
-        [{"file_path": ..., "client_name": ..., "score": 1.0, "full_text": ...}, ...]
+        [{"id": 1, "file_path": ..., "client_name": ..., "score": 1.0, "full_text": ...}, ...]
     Dotaz může být jen příjmení ('Nováka') i celé jméno ('Jana Nováková').
     """
     key = name_key(query)
-    if  not key:
+    if not key:
         return []
 
-    rows = conn.execute(
-        "SELECT id, file_path, client_name, full_text FROM contracts WHERE name_key = ?",
-        (key,),
-    ).fetchall()
+    # přesná shoda
+    results = [{**contract, "score": 1.0} for contract in find_by_name_key(conn, key)]
 
-    results = []
-    for contract_id, file_path, client_name, full_text in rows:
-        results.append(
-            {
-                "id": contract_id,
-                "file_path": file_path, 
-                "client_name": client_name, 
-                "score" : 1.0, 
-                "full_text": full_text,
-            }
-        )
-
-    rows = conn.execute(
-    "SELECT id, file_path, client_name, name_key, full_text FROM contracts "
-    "WHERE name_key IS NOT NULL AND name_key != ?",
-    (key,),
-    ).fetchall()
-
-    for contract_id, file_path, client_name, row_key, full_text in rows:
-       score = similarity(key, row_key)
-       if score >= threshold:
-          results.append({
-            "id":contract_id,
-            "file_path": file_path,
-            "client_name": client_name,
-            "score": score,
-            "full_text": full_text,
-        })
+    # fuzzy shoda (překlepy z OCR)
+    for contract in find_fuzzy_candidates(conn, exclude_key=key):
+        score = similarity(key, contract.pop("name_key"))
+        if score >= threshold:
+            results.append({**contract, "score": score})
 
     results.sort(key=lambda r: r["score"], reverse=True)
     return results

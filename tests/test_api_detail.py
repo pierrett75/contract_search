@@ -1,4 +1,3 @@
-"""Testy pro Den 2 (detail, 404, Depends, CONTRACTS_DB). Spuštění: pytest tests/test_api_detail.py -v"""
 import sqlite3
 from pathlib import Path
 

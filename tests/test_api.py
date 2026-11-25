@@ -1,27 +1,3 @@
-from pathlib import Path
-
-import pytest
-from fastapi.testclient import TestClient
-
-from contract_search import api
-from contract_search.db import get_db, ingest_folder
-
-SAMPLES = Path(__file__).parent / "sample_contracts"
-
-
-@pytest.fixture
-def client(tmp_path, monkeypatch):
-    # Dočasná DB se vzorovými smlouvami. Nepoužíváme ":memory:", protože
-    # endpoint si otevírá vlastní spojení a každé ":memory:" je jiná prázdná DB.
-    db_file = tmp_path / "test.db"
-    conn = get_db(str(db_file))
-    ingest_folder(str(SAMPLES), conn)
-    conn.close()
-
-    monkeypatch.setenv("CONTRACTS_DB", str(db_file))
-    return TestClient(api.app)
-
-
 def test_health(client):
     r = client.get("/health")
     assert r.status_code == 200

@@ -2,27 +2,12 @@ import sqlite3
 from pathlib import Path
 
 import pytest
-from fastapi.testclient import TestClient
 
-from contract_search import api
 from contract_search.db import get_contract, get_db, ingest_folder
 from contract_search.deps import get_conn, get_db_path
 
 SAMPLES = Path(__file__).parent / "sample_contracts"
 
-
-@pytest.fixture
-def client(tmp_path, monkeypatch):
-    """Dočasná DB se vzorovými smlouvami; API ji najde přes CONTRACTS_DB."""
-    db_file = tmp_path / "test.db"
-    monkeypatch.setenv("CONTRACTS_DB", str(db_file))
-    conn = get_db(str(db_file))
-    ingest_folder(str(SAMPLES), conn)
-    conn.close()
-    return TestClient(api.app)
-
-
-# --- TODO 1: cesta z proměnné prostředí ---------------------------------------
 def test_db_path_from_env(monkeypatch):
     monkeypatch.setenv("CONTRACTS_DB", "jina.db")
     assert get_db_path() == "jina.db"
@@ -33,7 +18,6 @@ def test_db_path_default(monkeypatch):
     assert get_db_path() == "contracts.db"
 
 
-# --- TODO 2: dependency zavře spojení -----------------------------------------
 def test_get_conn_closes_connection(tmp_path, monkeypatch):
     monkeypatch.setenv("CONTRACTS_DB", str(tmp_path / "x.db"))
     gen = get_conn()
@@ -45,7 +29,6 @@ def test_get_conn_closes_connection(tmp_path, monkeypatch):
         conn.execute("SELECT 1")           # zavřené spojení už nejde použít
 
 
-# --- TODO 3: get_contract ------------------------------------------------------
 def test_get_contract_missing_returns_none():
     conn = get_db(":memory:")
     assert get_contract(conn, 1) is None
@@ -60,7 +43,6 @@ def test_get_contract_returns_dict():
     assert c["id"] == 1
 
 
-# --- TODO 4 + 5: hledání vrací id a jde přes Depends --------------------------
 def test_search_uses_env_db_and_returns_id(client):
     r = client.get("/search", params={"q": "Nováka"})
     assert r.status_code == 200, r.text

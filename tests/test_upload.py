@@ -1,9 +1,8 @@
+
 from pathlib import Path
 
 import pytest
-from fastapi.testclient import TestClient
 
-from contract_search import api
 from contract_search.db import get_contract, get_db, ingest_file, ingest_folder
 from contract_search.search import search
 from contract_search.storage import (
@@ -95,12 +94,6 @@ def test_ingest_folder_still_works():
     ingest_folder(str(SAMPLES), conn)
     assert conn.execute("SELECT COUNT(*) FROM contracts").fetchone()[0] == 3
 
-
-@pytest.fixture
-def client(tmp_path, monkeypatch):
-    monkeypatch.setenv("CONTRACTS_DB", str(tmp_path / "test.db"))
-    monkeypatch.setenv("CONTRACTS_UPLOAD_DIR", str(tmp_path / "uploads"))
-    return TestClient(api.app)
 
 
 def upload(client, name, data):
